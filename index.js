@@ -168,7 +168,7 @@ app.get('/gendered-users', async (req, res) => {
         await client.connect()
         const database = client.db('app-data')
         const users = database.collection('users')
-        const query = {gender_identity: {$eq: gender}}
+        const query = {game_role: {$eq: gender}}
         const foundUsers = await users.find(query).toArray()
         res.json(foundUsers)
 
@@ -195,9 +195,9 @@ app.put('/user', async (req, res) => {
                 dob_day: formData.dob_day,
                 dob_month: formData.dob_month,
                 dob_year: formData.dob_year,
-                show_gender: formData.show_gender,
-                gender_identity: formData.gender_identity,
-                gender_interest: formData.gender_interest,
+                show_gameRole: formData.show_gameRole,
+                game_role: formData.game_role,
+                game_interest: formData.game_interest,
                 url: formData.url,
                 about: formData.about,
                 matches: formData.matches
