@@ -217,19 +217,13 @@ app.get('/gendered-users', async (req, res) => {
 
 // Update a User in the Database
 app.put('/user', async (req, res) => {
-
     const client = new MongoClient(uri)
     const formData = req.body.formData
-
-
-    try {
-   
+    try {  
         await client.connect()
         const database = client.db('app-data')
-        const users = database.collection('users')
-
+        const users = database.collection('users')      
         const query = {user_id: formData.user_id}
-
         const updateDocument = {
             $set: {
                 first_name: formData.first_name,
