@@ -1,17 +1,55 @@
-const PORT = process.env.PORT
+
 const express = require('express')
+const Router = require('express')
+const multer = require('multer')
+const fs = require('fs')
 const {MongoClient} = require('mongodb')
 const {v4: uuidv4} = require('uuid')
 const jwt = require('jsonwebtoken')
 const cors = require('cors')
 const bcrypt = require('bcrypt')
 require('dotenv').config()
-
+const cloudinary = require('cloudinary').v2
 const uri = process.env.URI
-
+const PORT = process.env.PORT
+const cloudinaryConfig = process.env.CLOUDINARY_URL
+const router = Router()
+const upload = multer({dest: './temp'})
 const app = express()
+
+
+cloudinary.config({
+    cloud_name:  process.env.CLOUDINARY_API_CLOUD,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
 app.use(cors())
 app.use(express.json())
+
+//ulopad
+app.post('/file', upload.single('file'), async (req, res) => {
+    try{
+        const file = req.file
+        const result = await cloudinary.uploader.upload(file.path, {
+            folder: 'profile-images',
+            width: 400,
+            height: 400,
+            gravity: 'faces',
+            crop: 'thumb',
+            zoom: 0.8,
+          })
+    res.json(result)
+    }catch(err){
+        console.log(err)
+    }finally{
+        fs.unlinkSync(req.file.path)
+    }
+})
+
+
+
+
 
 // Default
 app.get('/', (req, res) => {
@@ -179,10 +217,13 @@ app.get('/gendered-users', async (req, res) => {
 
 // Update a User in the Database
 app.put('/user', async (req, res) => {
+
     const client = new MongoClient(uri)
     const formData = req.body.formData
 
+
     try {
+   
         await client.connect()
         const database = client.db('app-data')
         const users = database.collection('users')
@@ -203,12 +244,13 @@ app.put('/user', async (req, res) => {
                 matches: formData.matches
             },
         }
-
         const insertedUser = await users.updateOne(query, updateDocument)
-
         res.json(insertedUser)
-
-    } finally {
+        return true
+    }catch(e){
+        console.log(e)
+    }
+    finally {
         await client.close()
     }
 })
